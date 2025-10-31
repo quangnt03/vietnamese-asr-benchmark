@@ -3,46 +3,46 @@
 
 ---
 
-## 📦 Project Overview
+## [PACKAGE] Project Overview
 
 This is a **production-ready, modular evaluation framework** for Vietnamese Automatic Speech Recognition (ASR) systems. The pipeline handles everything from dataset loading to comprehensive metric evaluation and visualization.
 
-### 🎯 Key Features
+### [TARGET] Key Features
 
-✅ **5 Vietnamese Datasets Supported**: ViMD, BUD500, LSVSC, VLSP 2020, VietMed
-✅ **4 SOTA Model Families**: PhoWhisper, Whisper, Wav2Vec2-XLS-R, Wav2Vn
-✅ **7 Comprehensive Metrics**: WER, CER, MER, WIL, WIP, SER, RTF
-✅ **Automated Pipeline**: Single command execution
-✅ **Rich Visualizations**: 8+ plot types for analysis
-✅ **Modular Design**: Reusable components
-✅ **Production Quality**: Error handling, logging, documentation
+[OK] **5 Vietnamese Datasets Supported**: ViMD, BUD500, LSVSC, VLSP 2020, VietMed
+[OK] **4 SOTA Model Families**: PhoWhisper, Whisper, Wav2Vec2-XLS-R, Wav2Vn
+[OK] **7 Comprehensive Metrics**: WER, CER, MER, WIL, WIP, SER, RTF
+[OK] **Automated Pipeline**: Single command execution
+[OK] **Rich Visualizations**: 8+ plot types for analysis
+[OK] **Modular Design**: Reusable components
+[OK] **Production Quality**: Error handling, logging, documentation
 
 ---
 
-## 📂 File Structure
+## [FOLDER] File Structure
 
 ```
 root/
-├── 📋 Core Modules
-│   ├── metrics.py              # Standalone metrics calculator (WER, CER, MER, etc.)
-│   ├── dataset_loader.py       # Dataset loading & preprocessing
-│   ├── model_evaluator.py      # Model loading & inference
-│   ├── visualization.py        # Plotting & visualization
-│   └── main_evaluation.py      # Main orchestration script
-│
-├── 🚀 Quick Start
-│   ├── demo.py                 # Quick demo with synthetic data
-│   ├── check_setup.py          # Dependency verification
-│   └── custom_analysis_example.ipynb  # Jupyter notebook example
-│
-└── 📖 Documentation
-    ├── README.md               # Comprehensive user guide
-    └── requirements.txt        # Python dependencies
+  Core Modules
+    metrics.py              # Standalone metrics calculator (WER, CER, MER, etc.)
+    dataset_loader.py       # Dataset loading & preprocessing
+    model_evaluator.py      # Model loading & inference
+    visualization.py        # Plotting & visualization
+    main_evaluation.py      # Main orchestration script
+
+ [LAUNCH] Quick Start
+    demo.py                 # Quick demo with synthetic data
+    check_setup.py          # Dependency verification
+    custom_analysis_example.ipynb  # Jupyter notebook example
+
+  Documentation
+     README.md               # Comprehensive user guide
+     requirements.txt        # Python dependencies
 ```
 
 ---
 
-## 🔧 Module Descriptions
+## [CONFIG] Module Descriptions
 
 ### 1. **metrics.py** (277 lines)
 **Purpose**: Standalone metrics calculation module
@@ -184,11 +184,11 @@ python main_evaluation.py \
 
 ---
 
-## 🚀 Quick Start Guide
+## [LAUNCH] Quick Start Guide
 
 ### Step 1: Install Dependencies
 ```bash
-cd vietnamese_asr_eval
+cd vietnamese-asr-benchmark
 pip install -r requirements.txt
 ```
 
@@ -215,7 +215,7 @@ python main_evaluation.py --data-dir /path/to/your/data
 
 ---
 
-## 📊 Output Examples
+## [CHART] Output Examples
 
 ### CSV Results Format
 
@@ -237,7 +237,7 @@ python main_evaluation.py --data-dir /path/to/your/data
 
 ---
 
-## 🎯 Evaluation Metrics Explained
+## [TARGET] Evaluation Metrics Explained
 
 ### Primary Metrics
 
@@ -282,7 +282,7 @@ python main_evaluation.py --data-dir /path/to/your/data
 
 ---
 
-## 🔍 Advanced Usage
+## [SEARCH] Advanced Usage
 
 ### Custom Evaluation Script
 
@@ -327,7 +327,7 @@ class MyDatasetLoader(DatasetLoader):
 
 ---
 
-## 📈 Performance Characteristics
+## [STATS] Performance Characteristics
 
 ### Processing Speed (Approximate)
 
@@ -350,7 +350,7 @@ class MyDatasetLoader(DatasetLoader):
 
 ---
 
-## 🛠️ Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -368,7 +368,7 @@ class MyDatasetLoader(DatasetLoader):
 
 ---
 
-## 📝 Configuration Options
+## [NOTE] Configuration Options
 
 ### Recommended Train/Test Ratios
 
@@ -384,7 +384,7 @@ class MyDatasetLoader(DatasetLoader):
 
 ---
 
-## 🎓 Research & Citations
+## [INFO] Research & Citations
 
 If you use this evaluation pipeline in your research, please cite the original model papers:
 
@@ -400,7 +400,7 @@ If you use this evaluation pipeline in your research, please cite the original m
 
 ---
 
-## 📞 Support
+##  Support
 
 For issues, questions, or contributions:
 1. Check the README.md for detailed documentation
@@ -410,7 +410,7 @@ For issues, questions, or contributions:
 
 ---
 
-## ✅ System Validation
+## [OK] System Validation
 
 Run the validation checklist:
 
@@ -420,17 +420,17 @@ python check_setup.py
 
 Expected output:
 ```
-✓ Python 3.8+
-✓ PyTorch
-✓ Transformers
-✓ All dependencies installed
-✓ Custom modules accessible
-✓ Directories created
+[OK] Python 3.8+
+[OK] PyTorch
+[OK] Transformers
+[OK] All dependencies installed
+[OK] Custom modules accessible
+[OK] Directories created
 ```
 
 ---
 
-## 🎉 Ready to Use!
+##  Ready to Use!
 
 Your Vietnamese ASR evaluation pipeline is complete and ready to use. Start with:
 
@@ -445,4 +445,4 @@ Then explore the full capabilities with your own data!
 **Created**: 2024
 **Version**: 1.0
 **License**: MIT
-**Status**: Production Ready ✅
+**Status**: Production Ready [OK]

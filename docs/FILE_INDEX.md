@@ -1,8 +1,8 @@
 # Vietnamese ASR Evaluation Pipeline - File Index
 
-## 📋 Complete File Listing
+##  Complete File Listing
 
-### 🎯 START HERE
+### [TARGET] START HERE
 
 | File | Purpose | Read Time |
 |------|---------|-----------|
@@ -12,7 +12,7 @@
 
 ---
 
-## 📚 Core Modules (Python)
+## [DOCS] Core Modules (Python)
 
 ### Main Execution
 
@@ -38,7 +38,7 @@
 
 ---
 
-## 📖 Documentation
+##  Documentation
 
 | File | Purpose | For Whom |
 |------|---------|----------|
@@ -49,7 +49,7 @@
 
 ---
 
-## 📓 Examples
+##  Examples
 
 | File | Format | Purpose |
 |------|--------|---------|
@@ -57,7 +57,7 @@
 
 ---
 
-## 🎯 Getting Started Path
+## [TARGET] Getting Started Path
 
 **For First-Time Users:**
 1. Read: `README.md` (Sections: Installation, Quick Start)
@@ -76,26 +76,26 @@
 
 ---
 
-## 📊 What Each Module Does
+## [CHART] What Each Module Does
 
 ### metrics.py
-- ✅ Calculate WER, CER, MER, WIL, WIP, SER
-- ✅ Measure Real-Time Factor (RTF)
-- ✅ Batch processing
-- ✅ Detailed error analysis
-- ✅ Formatted reporting
+- [OK] Calculate WER, CER, MER, WIL, WIP, SER
+- [OK] Measure Real-Time Factor (RTF)
+- [OK] Batch processing
+- [OK] Detailed error analysis
+- [OK] Formatted reporting
 
 **Key Classes:**
 - `ASRMetrics`: Main calculator
 - `RTFTimer`: Context manager for timing
 
 ### dataset_loader.py
-- ✅ Load 5 Vietnamese datasets
-- ✅ Automatic train/val/test splitting
-- ✅ Text normalization
-- ✅ Dataset statistics
-- ✅ EDA generation
-- ✅ Synthetic data for demo
+- [OK] Load 5 Vietnamese datasets
+- [OK] Automatic train/val/test splitting
+- [OK] Text normalization
+- [OK] Dataset statistics
+- [OK] EDA generation
+- [OK] Synthetic data for demo
 
 **Key Classes:**
 - `DatasetManager`: Main coordinator
@@ -103,11 +103,11 @@
 - `AudioSample`: Data structure
 
 ### model_evaluator.py
-- ✅ Load models from HuggingFace
-- ✅ Support 11+ model variants
-- ✅ GPU/CPU auto-detection
-- ✅ Batch transcription
-- ✅ Graceful error handling
+- [OK] Load models from HuggingFace
+- [OK] Support 11+ model variants
+- [OK] GPU/CPU auto-detection
+- [OK] Batch transcription
+- [OK] Graceful error handling
 
 **Key Classes:**
 - `ModelEvaluator`: Main coordinator
@@ -115,10 +115,10 @@
 - `PhoWhisperModel`, `WhisperModel`, etc.: Model implementations
 
 ### visualization.py
-- ✅ 8+ plot types
-- ✅ High-resolution exports
-- ✅ Customizable styling
-- ✅ Comprehensive reports
+- [OK] 8+ plot types
+- [OK] High-resolution exports
+- [OK] Customizable styling
+- [OK] Comprehensive reports
 
 **Key Classes:**
 - `ASRVisualizer`: Main visualizer
@@ -132,11 +132,11 @@
 6. Dataset statistics
 
 ### main_evaluation.py
-- ✅ 6-step automated pipeline
-- ✅ Command-line interface
-- ✅ Progress tracking
-- ✅ Error handling
-- ✅ CSV/JSON export
+- [OK] 6-step automated pipeline
+- [OK] Command-line interface
+- [OK] Progress tracking
+- [OK] Error handling
+- [OK] CSV/JSON export
 
 **Pipeline:**
 1. Load datasets
@@ -148,7 +148,7 @@
 
 ---
 
-## 🔧 Configuration Files
+## [CONFIG] Configuration Files
 
 ### requirements.txt
 Core dependencies:
@@ -161,30 +161,30 @@ Core dependencies:
 
 ---
 
-## 📦 Expected Output Structure
+## [PACKAGE] Expected Output Structure
 
 When you run the evaluation, it creates:
 
 ```
 results/
-├── evaluation_results_20241031_123456.csv
-├── evaluation_summary.txt
-├── dataset_statistics.csv
-├── eda_report.json
-└── plots/
-    ├── wer_comparison.png
-    ├── cer_comparison.png
-    ├── mer_comparison.png
-    ├── metrics_heatmap.png
-    ├── performance_radar.png
-    ├── rtf_comparison.png
-    ├── error_breakdown.png
-    └── dataset_statistics.png
+ evaluation_results_20241031_123456.csv
+ evaluation_summary.txt
+ dataset_statistics.csv
+ eda_report.json
+ plots/
+     wer_comparison.png
+     cer_comparison.png
+     mer_comparison.png
+     metrics_heatmap.png
+     performance_radar.png
+     rtf_comparison.png
+     error_breakdown.png
+     dataset_statistics.png
 ```
 
 ---
 
-## 🎓 Learning Resources
+## [INFO] Learning Resources
 
 ### To Understand Metrics:
 - Read: `PROJECT_SUMMARY.md` → "Evaluation Metrics Explained"
@@ -200,7 +200,7 @@ results/
 
 ---
 
-## 🔍 Quick Search
+## [SEARCH] Quick Search
 
 **Want to...** | **Look in...**
 ---|---
@@ -217,7 +217,7 @@ Quick commands | `QUICK_REFERENCE.md`
 
 ---
 
-## 📞 Support Resources
+##  Support Resources
 
 **Documentation Priority:**
 1. `README.md` - Start here for most questions
@@ -233,7 +233,7 @@ Quick commands | `QUICK_REFERENCE.md`
 
 ---
 
-## ✅ System Features
+## [OK] System Features
 
 **Datasets:** 5 supported (ViMD, BUD500, LSVSC, VLSP 2020, VietMed)
 **Models:** 11+ variants (PhoWhisper, Whisper, Wav2Vec2-XLS-R, Wav2Vn)
@@ -243,7 +243,7 @@ Quick commands | `QUICK_REFERENCE.md`
 
 ---
 
-## 🚀 Quick Start Reminder
+## [LAUNCH] Quick Start Reminder
 
 ```bash
 # Install
@@ -271,5 +271,5 @@ python main_evaluation.py --data-dir ./data
 
 Created: October 2024
 Version: 1.0.0
-Status: Production Ready ✅
+Status: Production Ready [OK]
 License: MIT

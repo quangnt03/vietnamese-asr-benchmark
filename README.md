@@ -1,200 +1,281 @@
-# Vietnamese ASR End-to-End Evaluation Pipeline
+# Vietnamese ASR Evaluation Framework
 
-A comprehensive, modular evaluation framework for Vietnamese Automatic Speech Recognition (ASR) systems.
+A comprehensive, production-ready evaluation framework for Vietnamese Automatic Speech Recognition (ASR) systems with modular architecture and extensive metrics support.
 
-## 🎯 Features
+## Features
 
-- **Multi-Dataset Support**: [ViMD](https://huggingface.co/datasets/nguyendv02/ViMD_Dataset), [Viet BUD500](https://huggingface.co/datasets/linhtran92/viet_bud500 ), [LSVSC](https://huggingface.co/datasets/doof-ferb/LSVSC), [VLSP 2020-100h](https://huggingface.co/datasets/doof-ferb/vlsp2020_vinai_100h), [VietMed](https://huggingface.co/datasets/leduckhai/VietMed)
+- **Multi-Dataset Support**: ViMD, Viet BUD500, LSVSC, VLSP 2020, VietMed, and HuggingFace datasets
 - **Multi-Model Evaluation**: PhoWhisper, OpenAI Whisper, Wav2Vec2-XLS-R, Wav2Vn
-- **Comprehensive Metrics**: WER, CER, MER, WIL, WIP, SER, RTF
-- **Automated Workflow**: From data loading to visualization
-- **Modular Design**: Reusable components for custom evaluations
-- **Rich Visualizations**: Heatmaps, radar charts, comparative plots
+- **Comprehensive Metrics**: WER, CER, MER, WIL, WIP, SER, RTF with detailed error analysis
+- **Automated Workflow**: End-to-end pipeline from data loading to visualization
+- **Modular Design**: Installable Python package with reusable components
+- **Rich Visualizations**: Heatmaps, radar charts, comparative plots, error breakdowns
+- **CLI Commands**: Easy-to-use command-line interface
+- **Jupyter Notebooks**: Interactive examples for custom analysis
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Directory Structure](#directory-structure)
-- [Detailed Usage](#detailed-usage)
+- [Project Structure](#project-structure)
+- [Usage](#usage)
 - [Module Documentation](#module-documentation)
 - [Customization](#customization)
 - [Output Examples](#output-examples)
+- [Contributing](#contributing)
 
-## 🚀 Installation
+## Installation
 
 ### Prerequisites
 
 - Python 3.8 or higher
-- CUDA-capable GPU (recommended for faster inference)
+- pip package manager
+- CUDA-capable GPU (optional, for faster inference)
 - 16GB+ RAM recommended
 
-### Setup
+### Method 1: Install as Package (Recommended)
 
-1. Clone or download this repository:
 ```bash
-cd vietnamese_asr_eval
+# Clone the repository
+git clone https://github.com/quangnt03/vietnamese-asr-benchmark.git
+cd vietnamese-asr-benchmark
+
+# Create virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install in development mode
+pip install -e .
+
+# Or install with development dependencies
+pip install -e ".[dev]"
 ```
 
-2. Install dependencies:
+### Method 2: Install Dependencies Only
+
 ```bash
+# Clone the repository
+git clone https://github.com/quangnt03/vietnamese-asr-benchmark.git
+cd vietnamese-asr-benchmark
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-3. Install PyTorch with CUDA support (if available):
+### Optional: CUDA Support
+
 ```bash
 # For CUDA 11.8
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
-# For CPU only
+# For CPU only (default)
 pip install torch torchvision torchaudio
 ```
 
-## 🎬 Quick Start
-
-### Option 1: Run with Demo Data
-
-The system includes synthetic data generation for demonstration:
+### Verify Installation
 
 ```bash
-python main_evaluation.py \
-    --data-dir ./data \
-    --output-dir ./results \
-    --max-samples 10
+# Using installed command
+vietnamese-asr-benchmark-check
+
+# Or run directly
+python scripts/check_setup.py
 ```
 
-### Option 2: Run with Your Data
+For detailed installation instructions, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
-Organize your data following this structure:
+## Quick Start
 
-```
-data/
-├── vimd/
-│   ├── audio/
-│   │   └── province_name/
-│   │       └── *.wav
-│   └── transcripts/
-│       └── metadata.csv
-├── bud500/
-├── lsvsc/
-├── vlsp2020/
-└── vietmed/
-```
+### Option 1: Run Demo
 
-Then run:
+The quickest way to see the system in action:
 
 ```bash
-python main_evaluation.py --data-dir ./data --output-dir ./results
+# Using installed command
+vietnamese-asr-benchmark-demo
+
+# Or run script directly
+python scripts/demo.py
 ```
 
-### Option 3: Evaluate Specific Models and Datasets
+This runs a demonstration with synthetic data and mock models.
+
+### Option 2: Quick Test (10 samples)
 
 ```bash
-python main_evaluation.py \
-    --models phowhisper-small whisper-small wav2vec2-xlsr-vietnamese \
+# Using installed command
+vietnamese-asr-benchmark-eval --max-samples 10
+
+# Or run script directly
+python scripts/main_evaluation.py --max-samples 10
+```
+
+### Option 3: Full Evaluation
+
+```bash
+# Using installed command
+vietnamese-asr-benchmark-eval --data-dir ./data --output-dir ./results
+
+# Or run script directly
+python scripts/main_evaluation.py --data-dir ./data --output-dir ./results
+```
+
+### Option 4: Specific Models and Datasets
+
+```bash
+# Using installed command
+vietnamese-asr-benchmark-eval \
+    --models phowhisper-small whisper-small \
     --datasets ViMD VLSP2020 \
-    --train-ratio 0.7 \
-    --val-ratio 0.15 \
-    --output-dir ./results
+    --max-samples 50
+
+# Or run script directly
+python scripts/main_evaluation.py \
+    --models phowhisper-small whisper-small \
+    --datasets ViMD VLSP2020 \
+    --max-samples 50
 ```
 
-## 📁 Directory Structure
-
-```
-vietnamese_asr_eval/
-├── main_evaluation.py          # Main orchestration script
-├── metrics.py                  # Standalone metrics module
-├── dataset_loader.py           # Dataset loading and preprocessing
-├── model_evaluator.py          # Model loading and inference
-├── visualization.py            # Plotting and visualization
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-│
-├── data/                       # Your datasets go here
-│   ├── vimd/
-│   ├── bud500/
-│   ├── lsvsc/
-│   ├── vlsp2020/
-│   └── vietmed/
-│
-└── results/                    # Output directory (auto-created)
-    ├── evaluation_results_*.csv
-    ├── evaluation_summary.txt
-    ├── dataset_statistics.csv
-    ├── eda_report.json
-    └── plots/
-        ├── wer_comparison.png
-        ├── cer_comparison.png
-        ├── metrics_heatmap.png
-        ├── performance_radar.png
-        ├── rtf_comparison.png
-        └── error_breakdown.png
-```
-
-## 📖 Detailed Usage
-
-### Command Line Options
+### List Available Models
 
 ```bash
-python main_evaluation.py --help
+# Using installed command
+vietnamese-asr-benchmark-eval --list-models
+
+# Or run script directly
+python scripts/main_evaluation.py --list-models
+```
+
+## Project Structure
+
+```
+vietnamese-asr-benchmark/
+├── src/                     # Core library (importable package)
+│   ├── __init__.py          # Package initialization
+│   ├── metrics.py           # ASR metrics calculation
+│   ├── dataset_loader.py    # Dataset loading & management
+│   ├── model_evaluator.py   # Model loading & evaluation
+│   └── visualization.py     # Results visualization
+│
+├── scripts/                  # Executable scripts
+│   ├── main_evaluation.py   # Main evaluation pipeline
+│   ├── demo.py              # Quick demonstration
+│   ├── fetch_datasets.py    # HuggingFace dataset fetcher
+│   └── check_setup.py       # Setup verification
+│
+├── notebooks/                # Jupyter notebooks
+│   ├── custom_analysis_example.ipynb
+│   └── huggingface_integration_example.ipynb
+│
+├── docs/                     # Documentation
+│   ├── INSTALLATION.md      # Installation guide
+│   ├── PROJECT_STRUCTURE.md # Project structure details
+│   ├── QUICK_REFERENCE.md   # Command cheat sheet
+│   └── PROJECT_SUMMARY.md   # Technical overview
+│
+├── tests/                    # Unit tests
+├── configs/                  # Configuration files
+├── data/                     # Datasets (gitignored)
+├── results/                  # Output results (gitignored)
+│
+├── setup.py                  # Package installation
+├── pyproject.toml            # Modern packaging config
+├── requirements.txt          # Dependencies
+└── README.md                 # This file
+```
+
+For detailed structure information, see [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md).
+
+## Usage
+
+### Command-Line Interface
+
+After installation, the following commands are available:
+
+```bash
+# Run evaluation
+vietnamese-asr-benchmark-eval [options]
+
+# Run demo
+vietnamese-asr-benchmark-demo
+
+# Fetch HuggingFace datasets
+vietnamese-asr-benchmark-fetch --fetch common_voice_vi vivos --max-samples 100
+
+# Check setup
+vietnamese-asr-benchmark-check
+```
+
+### Command-Line Options
+
+```bash
+vietnamese-asr-benchmark-eval --help
 ```
 
 **Available options:**
 
-- `--data-dir`: Base directory containing datasets (default: `./data`)
-- `--output-dir`: Directory for output results (default: `./results`)
-- `--models`: Models to evaluate (space-separated)
-- `--datasets`: Datasets to evaluate (space-separated)
-- `--train-ratio`: Training set ratio (default: 0.7)
-- `--val-ratio`: Validation set ratio (default: 0.15)
-- `--max-samples`: Maximum samples per dataset for quick testing
+- `--data-dir PATH`: Base directory containing datasets (default: `./data`)
+- `--output-dir PATH`: Directory for output results (default: `./results`)
+- `--models MODEL [MODEL ...]`: Models to evaluate (space-separated)
+- `--datasets DATASET [DATASET ...]`: Datasets to evaluate (space-separated)
+- `--train-ratio FLOAT`: Training set ratio (default: 0.7)
+- `--val-ratio FLOAT`: Validation set ratio (default: 0.15)
+- `--max-samples INT`: Maximum samples per dataset for quick testing
 - `--list-models`: List all available models
+- `--use-huggingface`: Use HuggingFace datasets
+- `--hf-datasets DATASET [DATASET ...]`: HuggingFace datasets to use
 
-### Available Models
+### Using as Python Package
 
-List all available models:
+After installation, import the package in your Python code:
+
+```python
+from src import ASRMetrics, DatasetManager, ModelEvaluator, ASRVisualizer
+
+# Calculate metrics
+calculator = ASRMetrics()
+metrics = calculator.calculate_all_metrics(
+    reference="xin chào tôi là người việt nam",
+    hypothesis="xin chào tôi là người việt"
+)
+
+# Load datasets
+manager = DatasetManager(base_data_dir="./data")
+datasets = manager.load_all_datasets()
+
+# Evaluate models
+evaluator = ModelEvaluator(models_to_evaluate=['phowhisper-small'])
+evaluator.load_models()
+models = evaluator.get_loaded_models()
+
+# Create visualizations
+visualizer = ASRVisualizer(output_dir="./plots")
+visualizer.create_comprehensive_report(results_df)
+```
+
+### Jupyter Notebooks
+
+Interactive examples are provided in the `notebooks/` directory:
 
 ```bash
-python main_evaluation.py --list-models
+# Start Jupyter
+jupyter notebook notebooks/
+
+# Available notebooks:
+# - custom_analysis_example.ipynb: Custom analysis workflows
+# - huggingface_integration_example.ipynb: HuggingFace datasets integration
 ```
 
-**Supported models:**
-- `phowhisper-tiny`: PhoWhisper-tiny (39M params)
-- `phowhisper-base`: PhoWhisper-base (74M params)
-- `phowhisper-small`: PhoWhisper-small (244M params)
-- `phowhisper-medium`: PhoWhisper-medium (769M params)
-- `phowhisper-large`: PhoWhisper-large (1.5B params)
-- `whisper-small`: OpenAI Whisper-small
-- `whisper-medium`: OpenAI Whisper-medium
-- `whisper-large`: OpenAI Whisper-large-v3
-- `wav2vec2-xlsr-vietnamese`: Wav2Vec2-XLSR Vietnamese
-- `wav2vec2-base-vietnamese`: Wav2Vec2-Base Vietnamese
-- `wav2vn`: Wav2Vn (placeholder)
+Both notebooks are compatible with Google Colab and will automatically set up the environment.
 
-### Dataset Format
+## Module Documentation
 
-Each dataset should have the following structure:
-
-**metadata.csv format:**
-```csv
-file_id,transcription,province,speaker_id
-audio_001,xin chào tôi là người việt nam,hanoi,speaker_01
-audio_002,hôm nay thời tiết đẹp,hcm,speaker_02
-```
-
-Audio files should be:
-- Format: WAV (16kHz, mono recommended)
-- Quality: Clear speech, minimal background noise
-- Duration: 1-30 seconds per sample recommended
-
-## 📚 Module Documentation
-
-### 1. Metrics Module (`metrics.py`)
+### 1. Metrics Module (src.metrics)
 
 Standalone module for calculating ASR metrics:
 
 ```python
-from metrics import ASRMetrics, RTFTimer
+from src.metrics import ASRMetrics, RTFTimer, format_metrics_report
 
 calculator = ASRMetrics()
 
@@ -211,65 +292,117 @@ batch_metrics = calculator.calculate_batch_metrics(
     references=["text1", "text2"],
     hypotheses=["hyp1", "hyp2"]
 )
+
+# Print formatted report
+print(format_metrics_report(metrics, "Evaluation Results"))
 ```
 
-### 2. Dataset Loader (`dataset_loader.py`)
+**Metrics Calculated:**
+- WER (Word Error Rate)
+- CER (Character Error Rate)
+- MER (Match Error Rate)
+- WIL (Word Information Lost)
+- WIP (Word Information Preserved)
+- SER (Sentence Error Rate)
+- RTF (Real-Time Factor)
+
+### 2. Dataset Loader (src.dataset_loader)
 
 Handle multiple Vietnamese datasets:
 
 ```python
-from dataset_loader import DatasetManager
+from src.dataset_loader import DatasetManager, AudioSample
 
 manager = DatasetManager(base_data_dir="./data")
+
+# Load all datasets
 datasets = manager.load_all_datasets()
+
+# Get statistics
 stats = manager.get_dataset_statistics()
-splits = manager.prepare_train_test_splits()
+
+# Prepare train/val/test splits
+splits = manager.prepare_train_test_splits(
+    train_ratio=0.7,
+    val_ratio=0.15,
+    test_ratio=0.15
+)
 ```
 
-### 3. Model Evaluator (`model_evaluator.py`)
+**Supported Datasets:**
+- ViMD (Vietnamese Multidialectal)
+- BUD500 (Vietnamese speech corpus)
+- LSVSC (Large-scale Vietnamese Speech Corpus)
+- VLSP 2020 (100h Vietnamese speech)
+- VietMed (Medical Vietnamese speech)
+- HuggingFace datasets (Common Voice, VIVOS, FOSD)
+
+### 3. Model Evaluator (src.model_evaluator)
 
 Load and evaluate ASR models:
 
 ```python
-from model_evaluator import ModelEvaluator, ModelFactory
+from src.model_evaluator import ModelEvaluator, ModelFactory
 
+# List available models
+available_models = ModelFactory.get_available_models()
+
+# Load specific models
 evaluator = ModelEvaluator(
     models_to_evaluate=['phowhisper-small', 'whisper-small']
 )
 evaluator.load_models()
 models = evaluator.get_loaded_models()
 
-# Transcribe
+# Transcribe audio
 transcription = models['phowhisper-small'].transcribe("audio.wav")
 ```
 
-### 4. Visualization (`visualization.py`)
+**Supported Models:**
+- PhoWhisper: tiny, base, small, medium, large
+- OpenAI Whisper: small, medium, large-v3
+- Wav2Vec2-XLSR: Vietnamese fine-tuned variants
+- Custom models (easy to add)
+
+### 4. Visualization (src.visualization)
 
 Create comprehensive visualizations:
 
 ```python
-from visualization import ASRVisualizer
+from src.visualization import ASRVisualizer
 import pandas as pd
 
 visualizer = ASRVisualizer(output_dir="./plots")
 results_df = pd.read_csv("results.csv")
 
-# Create all plots
+# Create individual plots
+visualizer.plot_metric_comparison(results_df, metric='wer')
+visualizer.plot_all_metrics_heatmap(results_df)
+visualizer.plot_model_performance_radar(results_df)
+
+# Create all plots at once
 visualizer.create_comprehensive_report(results_df)
 ```
 
-## 🎨 Customization
+**Generated Plots:**
+- WER/CER/MER comparison bar charts
+- Metrics heatmap (all metrics, all models/datasets)
+- Performance radar chart (multi-dimensional comparison)
+- RTF comparison (real-time factor analysis)
+- Error breakdown (insertions/deletions/substitutions)
+- Dataset statistics overview
+
+## Customization
 
 ### Adding a New Dataset
 
-1. Create a new loader class in `dataset_loader.py`:
+1. Create a new loader class in `src/dataset_loader.py`:
 
 ```python
 class MyDatasetLoader(DatasetLoader):
     def load_dataset(self) -> List[AudioSample]:
-        # Your loading logic here
         samples = []
-        # ... load your data ...
+        # Your loading logic here
         return samples
 ```
 
@@ -284,7 +417,7 @@ loaders = {
 
 ### Adding a New Model
 
-1. Add model configuration in `model_evaluator.py`:
+Add model configuration in `src/model_evaluator.py`:
 
 ```python
 MODEL_CONFIGS = {
@@ -299,7 +432,7 @@ MODEL_CONFIGS = {
 
 ### Adding Custom Metrics
 
-1. Add metric function in `metrics.py`:
+1. Add metric function in `src/metrics.py`:
 
 ```python
 @staticmethod
@@ -310,7 +443,9 @@ def calculate_my_metric(reference: str, hypothesis: str) -> float:
 
 2. Include in `calculate_all_metrics()` method
 
-## 📊 Output Examples
+For more details, see [docs/PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md).
+
+## Output Examples
 
 ### CSV Results
 
@@ -339,37 +474,40 @@ BEST PERFORMING MODELS (by WER)
 ViMD           : PhoWhisper-small              (WER: 0.1234)
 BUD500         : Whisper-small                 (WER: 0.1456)
 LSVSC          : PhoWhisper-small              (WER: 0.1123)
-...
 ```
 
 ### Visualizations
 
-The pipeline generates multiple plots:
-- **WER/CER/MER Comparison**: Bar charts comparing metrics across models and datasets
-- **Metrics Heatmap**: Color-coded matrix of all metrics
-- **Performance Radar**: Multi-dimensional performance comparison
-- **RTF Comparison**: Real-time factor analysis
-- **Error Breakdown**: Distribution of insertion/deletion/substitution errors
-- **Dataset Statistics**: Overview of dataset characteristics
+All plots are saved as high-quality PNG files (300 DPI) in the output directory:
 
-## 🔧 Troubleshooting
+- `wer_comparison.png`: WER comparison across models and datasets
+- `cer_comparison.png`: CER comparison across models and datasets
+- `mer_comparison.png`: MER comparison across models and datasets
+- `metrics_heatmap.png`: Color-coded matrix of all metrics
+- `performance_radar.png`: Multi-dimensional performance comparison
+- `rtf_comparison.png`: Real-time factor analysis
+- `error_breakdown.png`: Distribution of insertion/deletion/substitution errors
+- `dataset_statistics.png`: Overview of dataset characteristics
+
+## Troubleshooting
 
 ### Out of Memory Errors
 
 If you encounter OOM errors:
 
-1. Reduce batch size (evaluation is done sequentially by default)
+1. Use `--max-samples` to limit evaluation size
 2. Use smaller model variants (e.g., `phowhisper-small` instead of `large`)
-3. Use `--max-samples` to limit evaluation size
-4. Enable CPU-only mode by not installing CUDA PyTorch
+3. Reduce batch size in model configuration
+4. Use CPU-only mode if GPU memory is limited
 
 ### Model Loading Failures
 
 If models fail to load:
 
 1. Check internet connection (models download from HuggingFace)
-2. Verify HuggingFace authentication if needed
+2. Verify HuggingFace authentication if needed: `huggingface-cli login`
 3. The system will fall back to mock transcription for demonstration
+4. Check PyTorch installation: `python -c "import torch; print(torch.cuda.is_available())"`
 
 ### Dataset Loading Issues
 
@@ -378,35 +516,85 @@ If datasets don't load:
 1. Verify directory structure matches expected format
 2. Check metadata CSV format and encoding (UTF-8)
 3. The system will generate synthetic samples for demonstration if data is missing
+4. Check file permissions and paths
 
-## 📝 Citation
+For more troubleshooting tips, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
-If you use this evaluation pipeline in your research, please cite:
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- [INSTALLATION.md](docs/INSTALLATION.md) - Complete installation guide
+- [PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) - Project organization details
+- [QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md) - Command cheat sheet
+- [PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md) - Technical deep-dive
+- [FILE_INDEX.md](docs/FILE_INDEX.md) - File navigation guide
+
+## Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests: `pytest` (if available)
+5. Format code: `black src/ scripts/` and `isort src/ scripts/`
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+Please ensure your code:
+- Follows the existing code style
+- Includes docstrings for functions and classes
+- Does not include emojis (use text alternatives like [OK], [WARNING])
+- Updates relevant documentation
+
+## Citation
+
+If you use this evaluation framework in your research, please cite:
 
 ```bibtex
 @software{vietnamese_asr_eval_2024,
-  title = {Vietnamese ASR End-to-End Evaluation Pipeline},
+  title = {Vietnamese ASR Evaluation Framework},
   year = {2024},
-  author = {Your Name},
-  url = {https://github.com/yourusername/vietnamese-asr-eval}
+  author = {Vietnamese ASR Evaluation Team},
+  url = {https://github.com/quangnt03/vietnamese-asr-benchmark},
+  version = {1.0.0}
 }
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📧 Contact
-
-For questions or issues, please open an issue on GitHub or contact [your email].
-
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - VinAI Research for PhoWhisper models
 - OpenAI for Whisper models
-- Facebook AI for Wav2Vec2 models
-- Contributors to the Vietnamese ASR datasets
+- Meta AI (Facebook) for Wav2Vec2 models
+- Contributors to the Vietnamese ASR datasets:
+  - ViMD dataset creators
+  - VLSP organizers
+  - Common Voice contributors
+  - HuggingFace community
+
+## Contact
+
+For questions, issues, or suggestions:
+- Open an issue on GitHub
+- Check existing documentation in `docs/`
+- Review the example notebooks in `notebooks/`
+
+## Project Status
+
+**Version**: 1.0.0
+**Status**: Production Ready
+**Last Updated**: October 2024
+
+---
+
+**Quick Links:**
+- [Installation Guide](docs/INSTALLATION.md)
+- [Quick Reference](docs/QUICK_REFERENCE.md)
+- [Project Structure](docs/PROJECT_STRUCTURE.md)
+- [Example Notebooks](notebooks/)
