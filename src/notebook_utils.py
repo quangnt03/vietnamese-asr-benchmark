@@ -58,7 +58,7 @@ def setup_paths() -> Dict[str, Path]:
             import subprocess
             subprocess.run([
                 'git', 'clone',
-                'https://github.com/YOUR_USERNAME/vietnamese_asr_benchmark.git',
+                'https://github.com/quangnt03/vietnamese-asr-benchmark.git',
                 str(project_root)
             ])
     else:

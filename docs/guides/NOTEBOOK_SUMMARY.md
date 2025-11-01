@@ -10,16 +10,21 @@ A complete 4-notebook evaluation framework for systematically benchmarking Vietn
 
 ```
 notebooks/
+├── 00_custom_analysis_example.ipynb    # Template for evaluating custom models
 ├── 01_phowhisper_evaluation.ipynb      # PhoWhisper models evaluation
 ├── 02_whisper_evaluation.ipynb         # OpenAI Whisper models evaluation
 ├── 03_wav2vec2_evaluation.ipynb        # Wav2Vec2-XLSR models evaluation
-├── 04_cross_model_comparison.ipynb     # Cross-model analysis & recommendations
-├── notebook_utils.py                   # Shared utilities & report generator
-├── README.md                           # Complete user guide
-└── NOTEBOOK_SUMMARY.md                 # This file
+├── 04_wav2vn_evaluation.ipynb           # Wav2Vn model evaluation
+├── 05_cross_model_comparison.ipynb      # Cross-model analysis & recommendations
+├── config_utils_examples.md             # Config utilities usage guide
+├── CONFIG_UTILS_README.md               # Config utilities quick reference
+└── NOTEBOOK_UTILS_MIGRATION.md          # Migration documentation
+
+src/
+└── notebook_utils.py                    # Shared utilities & report generator
 ```
 
-**Total lines of code:** ~2,500 (notebooks) + 400 (utilities) = **~2,900 lines**
+**Total lines of code:** ~3,000 (notebooks) + 500 (utilities) = **~3,500 lines**
 
 ---
 
@@ -85,7 +90,25 @@ notebooks/
 
 **Dual Environment Support:**
 - **Local:** Direct execution with existing Python environment
-- **Google Colab:** Automatic dependency installation, Drive mounting
+- **Google Colab:** Automatic repository cloning and dependency installation
+
+**Google Colab Setup (New!):**
+
+All evaluation notebooks now include a **Colab Setup Cell** that must be run FIRST:
+
+```python
+# Cell 0: Google Colab Setup
+# Automatically detects Colab and:
+# 1. Clones the GitHub repository
+# 2. Changes to repository directory
+# 3. Installs dependencies from requirements.txt
+```
+
+**IMPORTANT for Colab users:**
+Before running, update the repository URL in the setup cell:
+```python
+REPO_URL = "https://github.com/quangnt03/vietnamese-asr-benchmark.git"
+```
 
 **Auto-Detection:**
 ```python
@@ -136,7 +159,9 @@ Each evaluation computes **7 metrics**:
 
 ## Module Dependencies
 
-### notebook_utils.py
+### src/notebook_utils.py
+
+**Location:** Moved from `notebooks/` to `src/` for better project organization
 
 **Classes:**
 - `ReportGenerator`: Creates Vietnamese Markdown reports
@@ -144,18 +169,51 @@ Each evaluation computes **7 metrics**:
 **Functions:**
 - `detect_environment()`: Auto-detect local vs Colab
 - `setup_paths()`: Configure directory structure
+- `load_config()`: Load configuration files from configs/ directory
+- `list_available_configs()`: List all available config files
 - `install_dependencies()`: Auto-install for Colab
 - `print_environment_info()`: System diagnostics
 - `create_evaluation_summary()`: Generate summary strings
+
+**Import Pattern:**
+```python
+from src.notebook_utils import setup_paths, load_config
+```
 
 ---
 
 ## Usage Examples
 
+### Google Colab Workflow
+
+**Step 1: Setup (Run Once)**
+```python
+# Cell 1: Google Colab Setup
+# IMPORTANT: Update the repository URL first!
+REPO_URL = "https://github.com/quangnt03/vietnamese-asr-benchmark.git"
+
+# This cell will:
+# - Clone the repository
+# - Install dependencies
+# - Change to project directory
+```
+
+**Step 2: Run Evaluation**
+Continue with remaining cells as normal.
+
+**Cell Execution Order for Colab:**
+1. **Cell 0** (Markdown): Setup header - READ THIS
+2. **Cell 1** (Code): Colab setup - **RUN FIRST!**
+3. **Cell 2+**: Environment detection and evaluation
+
+### Local Workflow
+
+**Skip Cells 0-1** (Colab setup), start from Cell 2.
+
 ### Quick Test (10 samples)
 
 ```python
-# In any notebook, Cell 4 (Configuration):
+# In any notebook, Configuration cell:
 MAX_SAMPLES_PER_DATASET = 10  # Quick test
 MODELS_TO_TEST = ["vinai/PhoWhisper-tiny"]  # Single small model
 ```
@@ -241,8 +299,14 @@ vinai/PhoWhisper-tiny,BUD500,200,0.2567,0.1234,0.2345,0.3654,0.6346,0.4789,0.789
 
 ### Execution Order
 
-1. Run notebooks 01-03 in **any order** (parallel OK)
-2. Run notebook 04 **after** 01-03 complete
+**Google Colab Users:**
+1. **First time:** Update `REPO_URL` in each notebook's Colab setup cell
+2. **Every run:** Run Colab setup cell (Cell 1) FIRST before any other cells
+3. Then proceed with remaining cells
+
+**All Users:**
+1. Run notebooks 01-04 in **any order** (parallel OK)
+2. Run notebook 05 (cross-comparison) **after** 01-04 complete
 3. Check `results/` and `docs/reports/` for outputs
 
 ### Error Handling
@@ -324,10 +388,14 @@ Potential additions:
 
 | Issue | Solution |
 |-------|----------|
-| Import errors | Check `sys.path` includes `src/` directory |
+| Import errors in Colab | Did you run the Colab setup cell first? |
+| Import errors (general) | Check `sys.path` includes project root |
+| ModuleNotFoundError: 'src' | Run Colab setup cell or ensure CWD is project root |
+| Repository not cloned | Update `REPO_URL` with your GitHub username |
 | CUDA OOM | Reduce `MAX_SAMPLES_PER_DATASET`, use smaller models |
-| Notebook 04 finds no results | Run notebooks 01-03 first |
+| Notebook 05 finds no results | Run notebooks 01-04 first |
 | Slow execution | Use GPU, reduce sample count, try smaller models |
+| Config file not found | Ensure repository was cloned completely |
 
 ---
 
