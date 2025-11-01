@@ -1,0 +1,42 @@
+{
+    "vimd": {
+        "id": "nguyendv02/ViMD_Dataset",
+        "config": "default",
+        "description": "ViMD: Vietnamese Multi-Dialect Dataset (63 provincial dialects)",
+        "splits": ["train", "test", "valid"],
+        "audio_column": "audio",
+        "text_column": "text"
+    },
+    "bud500": {
+        "id": "linhtran92/viet_bud500",
+        "config": "default",
+        "description": "Viet BUD500: 500 hours Vietnamese Speech Dataset",
+        "splits": ["train", "validation", "test"],
+        "audio_column": "audio",
+        "text_column": "transcription"
+    },
+    "lsvsc": {
+        "id": "doof-ferb/LSVSC",
+        "config": "default",
+        "description": "LSVSC: Large-Scale Vietnamese Speech Corpus",
+        "splits": ["train", "validation", "test"],
+        "audio_column": "audio",
+        "text_column": "transcription"
+    },
+    "vlsp2020": {
+        "id": "doof-ferb/vlsp2020_vinai_100h",
+        "config": "default",
+        "description": "VLSP 2020-100H: VinAI 100 hours Vietnamese Speech",
+        "splits": ["train"],
+        "audio_column": "audio",
+        "text_column": "transcription"
+    },
+    "vietmed": {
+        "id": "leduckhai/VietMed",
+        "config": "default",
+        "description": "VietMed: Vietnamese Medical Domain Speech Dataset",
+        "splits": ["train", "test", "dev"],
+        "audio_column": "audio",
+        "text_column": "text"
+    }
+}
