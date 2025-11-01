@@ -194,99 +194,89 @@ class ViMDLoader(DatasetLoader):
         
         print(f"Loaded {len(samples)} samples from ViMD")
         return samples
-    
-    def _create_synthetic_samples(self, dataset_name: str, num_samples: int = 100) -> List[AudioSample]:
-        """Create synthetic samples for demonstration when real data is not available."""
-        print(f"Creating {num_samples} synthetic samples for {dataset_name}...")
-        samples = []
-        
-        sample_texts = [
-            "xin chào tôi là người việt nam",
-            "hôm nay thời tiết đẹp",
-            "tôi yêu tiếng việt",
-            "chúng tôi đang học máy học",
-            "trí tuệ nhân tạo rất thú vị"
-        ]
-        
-        for i in range(num_samples):
-            sample = AudioSample(
-                audio_path=f"synthetic_{dataset_name}_{i}.wav",
-                transcription=sample_texts[i % len(sample_texts)],
-                duration=3.0 + np.random.rand() * 2,
-                sample_rate=16000,
-                dataset=dataset_name.upper(),
-                split="unknown",
-                dialect=f"dialect_{i % 3}",
-                speaker_id=f"speaker_{i % 10}"
-            )
-            samples.append(sample)
-        
-        return samples
 
 
 class BUD500Loader(DatasetLoader):
     """Loader for BUD500 dataset."""
-    
+
     def load_dataset(self) -> List[AudioSample]:
         """Load BUD500 dataset."""
         print("Loading BUD500 dataset...")
-        
-        # If real data doesn't exist, create synthetic
+
         if not self.data_dir.exists():
-            print(f"Warning: BUD500 data directory not found at {self.data_dir}")
-            return ViMDLoader(str(self.data_dir))._create_synthetic_samples("bud500", 50)
-        
-        # Implement actual BUD500 loading logic here
-        # This is a placeholder that follows similar pattern to ViMD
-        return ViMDLoader(str(self.data_dir))._create_synthetic_samples("bud500", 50)
+            raise FileNotFoundError(
+                f"BUD500 data directory not found at {self.data_dir}\n"
+                f"Please download the dataset or check the path."
+            )
+
+        # TODO: Implement actual BUD500 loading logic here
+        raise NotImplementedError(
+            f"BUD500 dataset loader not yet implemented.\n"
+            f"Please implement the loading logic in BUD500Loader.load_dataset()"
+        )
 
 
 class LSVSCLoader(DatasetLoader):
     """Loader for Large-Scale Vietnamese Speech Corpus (LSVSC)."""
-    
+
     def load_dataset(self) -> List[AudioSample]:
         """Load LSVSC dataset."""
         print("Loading LSVSC dataset...")
-        
+
         if not self.data_dir.exists():
-            print(f"Warning: LSVSC data directory not found at {self.data_dir}")
-            return ViMDLoader(str(self.data_dir))._create_synthetic_samples("lsvsc", 100)
-        
-        # Implement actual LSVSC loading logic here
-        return ViMDLoader(str(self.data_dir))._create_synthetic_samples("lsvsc", 100)
+            raise FileNotFoundError(
+                f"LSVSC data directory not found at {self.data_dir}\n"
+                f"Please download the dataset or check the path."
+            )
+
+        # TODO: Implement actual LSVSC loading logic here
+        raise NotImplementedError(
+            f"LSVSC dataset loader not yet implemented.\n"
+            f"Please implement the loading logic in LSVSCLoader.load_dataset()"
+        )
 
 
 class VLSP2020Loader(DatasetLoader):
     """Loader for VLSP 2020 dataset."""
-    
+
     def load_dataset(self) -> List[AudioSample]:
         """
         Load VLSP 2020 dataset.
         Expected structure follows VLSP competition format.
         """
         print("Loading VLSP 2020 dataset...")
-        
+
         if not self.data_dir.exists():
-            print(f"Warning: VLSP2020 data directory not found at {self.data_dir}")
-            return ViMDLoader(str(self.data_dir))._create_synthetic_samples("vlsp2020", 80)
-        
-        # Implement actual VLSP2020 loading logic here
-        return ViMDLoader(str(self.data_dir))._create_synthetic_samples("vlsp2020", 80)
+            raise FileNotFoundError(
+                f"VLSP2020 data directory not found at {self.data_dir}\n"
+                f"Please download the dataset or check the path."
+            )
+
+        # TODO: Implement actual VLSP2020 loading logic here
+        raise NotImplementedError(
+            f"VLSP2020 dataset loader not yet implemented.\n"
+            f"Please implement the loading logic in VLSP2020Loader.load_dataset()"
+        )
 
 
 class VietMedLoader(DatasetLoader):
     """Loader for VietMed dataset."""
-    
+
     def load_dataset(self) -> List[AudioSample]:
         """Load VietMed dataset."""
         print("Loading VietMed dataset...")
-        
+
         if not self.data_dir.exists():
-            print(f"Warning: VietMed data directory not found at {self.data_dir}")
-            return ViMDLoader(str(self.data_dir))._create_synthetic_samples("vietmed", 60)
-        
-        # Implement actual VietMed loading logic here
-        return ViMDLoader(str(self.data_dir))._create_synthetic_samples("vietmed", 60)
+            raise FileNotFoundError(
+                f"VietMed data directory not found at {self.data_dir}\n"
+                f"Please download the dataset or check the path."
+            )
+
+        # TODO: Implement actual VietMed loading logic here
+        raise NotImplementedError(
+            f"VietMed dataset loader not yet implemented.\n"
+            f"Please implement the loading logic in VietMedLoader.load_dataset()"
+        )
 
 
 class HuggingFaceDatasetLoader(DatasetLoader):
@@ -417,15 +407,13 @@ class HuggingFaceDatasetLoader(DatasetLoader):
                         self.config['id'],
                         self.config['config'],
                         split=split,
-                        cache_dir=str(self.cache_dir),
-                        trust_remote_code=True
+                        cache_dir=str(self.cache_dir)
                     )
                 else:
                     dataset = load_dataset(
                         self.config['id'],
                         split=split,
-                        cache_dir=str(self.cache_dir),
-                        trust_remote_code=True
+                        cache_dir=str(self.cache_dir)
                     )
                 
                 # Cast audio to 16kHz
@@ -503,13 +491,293 @@ class HuggingFaceDatasetLoader(DatasetLoader):
 class DatasetManager:
     """
     Manager class to handle multiple datasets.
+    Supports both HuggingFace datasets (default) and legacy local loaders.
     """
-    
-    def __init__(self, base_data_dir: str = "./data"):
+
+    def __init__(
+        self,
+        config_file: str,
+        base_data_dir: str = Path(__file__).parent.parent / "data",
+        use_huggingface: bool = True,
+        cache_dir: str = None
+    ):
+        """
+        Initialize dataset manager.
+
+        Args:
+            base_data_dir: Base directory containing all datasets
+            config_file: Path to JSON file with HuggingFace dataset configurations
+            use_huggingface: Whether to use HuggingFace datasets (default: True)
+            cache_dir: Cache directory for HuggingFace downloads (default: base_data_dir/huggingface_cache)
+        """
         self.base_data_dir = Path(base_data_dir)
+        self.base_data_dir.mkdir(parents=True, exist_ok=True)
         self.datasets = {}
-        self.use_huggingface = HF_AVAILABLE
-        
+        self.use_huggingface = use_huggingface and HF_AVAILABLE
+
+        # Set cache directory
+        if cache_dir is None:
+            self.cache_dir = self.base_data_dir / "huggingface_cache"
+        else:
+            self.cache_dir = Path(cache_dir)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+        # Load HuggingFace dataset configurations from JSON
+        self.config_file = Path(config_file)
+        self.hf_configs = {}
+        if self.config_file.exists():
+            with open(self.config_file, 'r', encoding='utf-8') as f:
+                self.hf_configs = json.load(f)
+                print(f"[OK] Loaded {len(self.hf_configs)} dataset configs from {config_file}")
+        elif use_huggingface:
+            print(f"[WARNING] HuggingFace config file not found: {config_file}")
+            print(f"[WARNING] Falling back to legacy local loaders")
+            self.use_huggingface = False
+
+        # Legacy local dataset loaders mapping (kept for backward compatibility)
+        self.loaders = {
+            'ViMD': ViMDLoader,
+            'BUD500': BUD500Loader,
+            'LSVSC': LSVSCLoader,
+            'VLSP2020': VLSP2020Loader,
+            'VietMed': VietMedLoader
+        }
+
+    def load_dataset(
+        self,
+        dataset_name: str,
+        train_ratio: float = 0.7,
+        val_ratio: float = 0.15,
+        test_ratio: float = 0.15,
+        random_seed: int = 42,
+        respect_predefined_splits: bool = True
+    ) -> Dict[str, List[AudioSample]]:
+        """
+        Load a single dataset and split into train/val/test.
+
+        Args:
+            dataset_name: Name of dataset (e.g., 'ViMD', 'BUD500', etc.)
+            train_ratio: Ratio for training set (ignored if respect_predefined_splits=True)
+            val_ratio: Ratio for validation set (ignored if respect_predefined_splits=True)
+            test_ratio: Ratio for test set (ignored if respect_predefined_splits=True)
+            random_seed: Random seed for reproducibility
+            respect_predefined_splits: If True, use predefined HuggingFace splits instead of re-splitting
+
+        Returns:
+            Dictionary with keys 'train', 'val', 'test' containing sample lists
+        """
+        # Normalize dataset name for lookup
+        dataset_key = dataset_name.lower()
+
+        # Debug: Check HuggingFace availability
+        print(f"[DEBUG] Loading dataset: {dataset_key}")
+        print(f"[DEBUG] use_huggingface: {self.use_huggingface}")
+        print(f"[DEBUG] Available HF configs: {list(self.hf_configs.keys())}")
+        print(f"[DEBUG] dataset_key in hf_configs: {dataset_key in self.hf_configs}")
+        print(f"[DEBUG] loaders: {self.hf_configs}")
+        # Try HuggingFace first if enabled
+        if self.use_huggingface and dataset_key in self.hf_configs:
+            print(f"[DEBUG] Using HuggingFace loader for {dataset_key}")
+            return self._load_from_huggingface(
+                dataset_key,
+                respect_predefined_splits,
+                train_ratio,
+                val_ratio,
+                test_ratio,
+                random_seed
+            )
+
+        print(f"[DEBUG] Falling back to legacy local loader for {dataset_name}")
+
+        # Fall back to legacy local loaders
+        if dataset_name not in self.loaders:
+            available_hf = list(self.hf_configs.keys()) if self.hf_configs else []
+            available_local = list(self.loaders.keys())
+            raise ValueError(
+                f"Unknown dataset: {dataset_name}.\n"
+                f"Available HuggingFace datasets: {available_hf}\n"
+                f"Available local loaders: {available_local}"
+            )
+
+        # Construct data directory path
+        data_dir = self.base_data_dir / dataset_key
+
+        # Load dataset using legacy loader
+        loader_class = self.loaders[dataset_name]
+        loader = loader_class(str(data_dir))
+        samples = loader.load_dataset()
+
+        if not samples:
+            print(f"[WARNING] No samples loaded for {dataset_name}")
+            return {'train': [], 'val': [], 'test': []}
+
+        # Split dataset
+        train_samples, val_samples, test_samples = loader.train_test_split(
+            samples, train_ratio, val_ratio, test_ratio, random_seed
+        )
+
+        # Return with 'val' key (not 'validation') to match notebook expectations
+        return {
+            'train': train_samples,
+            'val': val_samples,
+            'test': test_samples
+        }
+
+    def _load_from_huggingface(
+        self,
+        dataset_key: str,
+        respect_predefined_splits: bool,
+        train_ratio: float,
+        val_ratio: float,
+        test_ratio: float,
+        random_seed: int
+    ) -> Dict[str, List[AudioSample]]:
+        """Load dataset from HuggingFace Hub using config file."""
+        config = self.hf_configs[dataset_key]
+        print(f"Loading {dataset_key} from HuggingFace ({config['description']})...")
+
+        # Check if dataset is already cached on disk
+        dataset_cache_dir = self.cache_dir / dataset_key
+        load_from_disk_cache = dataset_cache_dir.exists()
+
+        samples_by_split = {}
+
+        # Load each split
+        for split in config['splits']:
+            try:
+                if load_from_disk_cache:
+                    # Load from local cache
+                    split_dir = dataset_cache_dir / split
+                    if split_dir.exists():
+                        print(f"  Loading {split} from disk cache...")
+                        dataset = load_from_disk(str(split_dir))
+                    else:
+                        continue
+                else:
+                    # Download from HuggingFace Hub
+                    print(f"  Downloading {split} from HuggingFace Hub...")
+                    if config['config']:
+                        dataset = load_dataset(
+                            config['id'],
+                            config['config'],
+                            split=split,
+                            cache_dir=str(self.cache_dir)
+                        )
+                    else:
+                        dataset = load_dataset(
+                            config['id'],
+                            split=split,
+                            cache_dir=str(self.cache_dir)
+                        )
+
+                    # Cast audio to 16kHz
+                    if config['audio_column'] in dataset.column_names:
+                        dataset = dataset.cast_column(
+                            config['audio_column'],
+                            Audio(sampling_rate=16000)
+                        )
+
+                # Convert to AudioSample objects
+                samples = self._convert_hf_to_samples(dataset, config, split)
+                samples_by_split[split] = samples
+                print(f"  [OK] Loaded {len(samples)} samples from {split}")
+
+            except Exception as e:
+                print(f"  [WARNING] Failed to load {split}: {e}")
+                samples_by_split[split] = []
+
+        # Map splits to standard train/val/test format
+        if respect_predefined_splits and samples_by_split:
+            return self._map_splits_to_standard(samples_by_split, config['splits'])
+        else:
+            # Combine all samples and re-split
+            all_samples = []
+            for samples in samples_by_split.values():
+                all_samples.extend(samples)
+
+            if not all_samples:
+                print(f"[WARNING] No samples loaded for {dataset_key}")
+                return {'train': [], 'val': [], 'test': []}
+
+            # Re-split using provided ratios
+            loader = DatasetLoader(str(self.base_data_dir / dataset_key))
+            train_samples, val_samples, test_samples = loader.train_test_split(
+                all_samples, train_ratio, val_ratio, test_ratio, random_seed
+            )
+
+            return {
+                'train': train_samples,
+                'val': val_samples,
+                'test': test_samples
+            }
+
+    def _convert_hf_to_samples(
+        self,
+        dataset,
+        config: Dict,
+        split_name: str
+    ) -> List[AudioSample]:
+        """Convert HuggingFace dataset to AudioSample objects."""
+        samples = []
+
+        for idx, item in enumerate(dataset):
+            try:
+                # Get audio data
+                audio_data = item[config['audio_column']]
+                if isinstance(audio_data, dict) and 'path' in audio_data:
+                    audio_path = audio_data['path']
+                elif isinstance(audio_data, dict) and 'array' in audio_data:
+                    # Audio is in memory, save to temporary location
+                    import soundfile as sf
+                    import tempfile
+                    temp_dir = self.cache_dir / "temp_audio"
+                    temp_dir.mkdir(exist_ok=True)
+                    audio_path = str(temp_dir / f"{split_name}_{idx}.wav")
+                    sf.write(audio_path, audio_data['array'], audio_data['sampling_rate'])
+                else:
+                    audio_path = str(audio_data)
+
+                # Get transcription
+                transcription = item[config['text_column']]
+
+                # Create AudioSample
+                sample = AudioSample(
+                    file_id=f"{split_name}_{idx}",
+                    audio_path=audio_path,
+                    transcription=transcription,
+                    metadata={'split': split_name, 'source': 'huggingface'}
+                )
+                samples.append(sample)
+
+            except Exception as e:
+                print(f"  [WARNING] Failed to process sample {idx}: {e}")
+                continue
+
+        return samples
+
+    def _map_splits_to_standard(
+        self,
+        samples_by_split: Dict[str, List[AudioSample]],
+        available_splits: List[str]
+    ) -> Dict[str, List[AudioSample]]:
+        """Map HuggingFace splits to standard train/val/test format."""
+        result = {'train': [], 'val': [], 'test': []}
+
+        # Map split names
+        for split_name, samples in samples_by_split.items():
+            if split_name in ['train', 'training']:
+                result['train'] = samples
+            elif split_name in ['val', 'validation', 'dev', 'valid']:
+                result['val'] = samples
+            elif split_name in ['test', 'testing']:
+                result['test'] = samples
+            else:
+                # Unknown split, add to train by default
+                print(f"[WARNING] Unknown split '{split_name}', adding to train set")
+                result['train'].extend(samples)
+
+        return result
+
     def load_all_datasets(
         self,
         datasets_config: Dict[str, str] = None,

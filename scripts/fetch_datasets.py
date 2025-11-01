@@ -2,260 +2,191 @@
 """
 HuggingFace Dataset Fetcher for Vietnamese ASR
 
-This script downloads and prepares Vietnamese ASR datasets from HuggingFace Hub.
-Supports multiple datasets and provides progress tracking.
+This is a thin CLI wrapper around DatasetManager for downloading datasets.
+All core logic is in src.dataset_loader.DatasetManager.
 """
 
 import os
+import sys
 import argparse
 from pathlib import Path
-from typing import List, Optional, Dict
-import json
-from tqdm import tqdm
-from datasets import load_dataset, Audio
+from typing import List, Optional
 
-HF_AVAILABLE = True
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+from src.dataset_loader import DatasetManager, HF_AVAILABLE
 
 
-class HuggingFaceDatasetFetcher:
+def list_available_datasets(dataset_manager: DatasetManager):
+    """List all available Vietnamese datasets."""
+    print("\n" + "="*70)
+    print("Available Vietnamese ASR Datasets on HuggingFace")
+    print("="*70 + "\n")
+
+    if not dataset_manager.hf_configs:
+        print("[WARNING] No dataset configurations found")
+        return
+
+    for key, info in dataset_manager.hf_configs.items():
+        print(f"-> {key}")
+        print(f"   ID: {info['id']}")
+        print(f"   Description: {info['description']}")
+        print(f"   Splits: {', '.join(info['splits'])}")
+        print()
+
+
+def fetch_dataset(
+    dataset_manager: DatasetManager,
+    dataset_key: str,
+    max_samples: Optional[int] = None,
+    save_to_disk: bool = True
+):
     """
-    Fetcher for Vietnamese ASR datasets from HuggingFace Hub.
+    Fetch a single dataset from HuggingFace.
+
+    Args:
+        dataset_manager: DatasetManager instance
+        dataset_key: Key of the dataset to fetch
+        max_samples: Maximum samples per split (for testing)
+        save_to_disk: Whether to save to disk (always True for this CLI)
     """
-
-    def __init__(self, cache_dir: str = "./data/huggingface_cache", config_file: str = "dataset_profile.json"):
-        """
-        Initialize fetcher.
-
-        Args:
-            cache_dir: Directory to cache downloaded datasets
-            config_file: Path to JSON file containing dataset configurations
-        """
-        if not HF_AVAILABLE:
-            raise ImportError("datasets library required. Install with: pip install datasets")
-
-        self.cache_dir = Path(cache_dir)
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
-
-        # Load dataset configurations from JSON file
-        config_path = Path(config_file)
-        if not config_path.exists():
-            raise FileNotFoundError(f"Dataset configuration file not found: {config_file}")
-
-        with open(config_path, 'r', encoding='utf-8') as f:
-            self.AVAILABLE_DATASETS = json.load(f)
-        
-    def list_available_datasets(self):
-        """List all available Vietnamese datasets."""
-        print("\n" + "="*70)
-        print("Available Vietnamese ASR Datasets on HuggingFace")
-        print("="*70 + "\n")
-        
-        for key, info in self.AVAILABLE_DATASETS.items():
-            print(f"-> {key}")
-            print(f"   ID: {info['id']}")
-            print(f"   Description: {info['description']}")
-            print(f"   Splits: {', '.join(info['splits'])}")
-            print()
-    
-    def fetch_dataset(
-        self,
-        dataset_key: str,
-        splits: Optional[List[str]] = None,
-        max_samples: Optional[int] = None,
-        save_to_disk: bool = True
-    ) -> Dict:
-        """
-        Fetch a dataset from HuggingFace.
-        
-        Args:
-            dataset_key: Key of the dataset to fetch
-            splits: List of splits to download (default: all)
-            max_samples: Maximum samples per split (for testing)
-            save_to_disk: Whether to save to disk
-            
-        Returns:
-            Dictionary of loaded dataset splits
-        """
-        if dataset_key not in self.AVAILABLE_DATASETS:
-            raise ValueError(f"Unknown dataset: {dataset_key}. Use list_available_datasets()")
-        
-        info = self.AVAILABLE_DATASETS[dataset_key]
-        
+    try:
         print(f"\n{'='*70}")
-        print(f"Fetching: {info['description']}")
+        print(f"Fetching: {dataset_key}")
         print(f"{'='*70}\n")
-        
-        # Determine splits to download
-        if splits is None:
-            splits = info['splits']
-        
-        dataset_splits = {}
-        
-        # Download each split
-        for split in splits:
-            if split not in info['splits']:
-                print(f"[WARNING] Split '{split}' not available for {dataset_key}")
-                continue
-            
-            print(f"Downloading split: {split}")
-            
-            try:
-                # Load dataset
-                if info['config']:
-                    dataset = load_dataset(
-                        info['id'],
-                        info['config'],
-                        split=split,
-                        cache_dir=str(self.cache_dir),
-                        trust_remote_code=True
-                    )
-                else:
-                    dataset = load_dataset(
-                        info['id'],
-                        split=split,
-                        cache_dir=str(self.cache_dir),
-                        trust_remote_code=True
-                    )
-                
-                # Limit samples if requested
-                if max_samples and len(dataset) > max_samples:
-                    print(f"  Limiting to {max_samples} samples (from {len(dataset)})")
-                    dataset = dataset.select(range(max_samples))
-                
-                print(f"  [OK] Loaded {len(dataset)} samples")
-                
-                # Cast audio column to Audio type if needed
-                if info['audio_column'] in dataset.column_names:
-                    dataset = dataset.cast_column(info['audio_column'], Audio(sampling_rate=16000))
-                
-                dataset_splits[split] = dataset
-                
-            except Exception as e:
-                print(f"  [FAILED] Failed to download {split}: {e}")
-        
-        # Save to disk if requested
-        if save_to_disk and dataset_splits:
-            output_dir = self.cache_dir / dataset_key
-            output_dir.mkdir(exist_ok=True)
-            
-            print(f"\nSaving to disk: {output_dir}")
-            for split, dataset in dataset_splits.items():
-                split_dir = output_dir / split
-                dataset.save_to_disk(str(split_dir))
-                print(f"  [OK] Saved {split}")
-            
-            # Save metadata
-            metadata = {
-                'dataset_key': dataset_key,
-                'dataset_id': info['id'],
-                'config': info['config'],
-                'splits': list(dataset_splits.keys()),
-                'audio_column': info['audio_column'],
-                'text_column': info['text_column'],
-                'total_samples': sum(len(ds) for ds in dataset_splits.values())
-            }
-            
-            metadata_path = output_dir / 'metadata.json'
-            with open(metadata_path, 'w') as f:
-                json.dump(metadata, f, indent=2)
-            
-            print(f"  [OK] Saved metadata")
-        
-        return dataset_splits
-    
-    def fetch_multiple_datasets(
-        self,
-        dataset_keys: List[str],
-        max_samples: Optional[int] = None
-    ):
-        """
-        Fetch multiple datasets.
-        
-        Args:
-            dataset_keys: List of dataset keys to fetch
-            max_samples: Maximum samples per split per dataset
-        """
-        print(f"\nFetching {len(dataset_keys)} datasets...")
-        
-        results = {}
-        for dataset_key in dataset_keys:
-            try:
-                datasets = self.fetch_dataset(
-                    dataset_key,
-                    max_samples=max_samples,
-                    save_to_disk=True
-                )
-                results[dataset_key] = datasets
-                print(f"\n[OK] {dataset_key} complete\n")
-            except Exception as e:
-                print(f"\n[FAILED] {dataset_key} failed: {e}\n")
-        
+
+        # Load dataset - this will download if not cached
+        samples = dataset_manager.load_dataset(
+            dataset_name=dataset_key,
+            respect_predefined_splits=True
+        )
+
+        # Limit samples if requested
+        if max_samples:
+            print(f"\n[INFO] Limiting to {max_samples} samples per split...")
+            for split in samples:
+                if len(samples[split]) > max_samples:
+                    samples[split] = samples[split][:max_samples]
+                    print(f"  {split}: limited to {max_samples} samples")
+
         # Print summary
-        print("\n" + "="*70)
-        print("FETCH SUMMARY")
-        print("="*70 + "\n")
-        
-        for dataset_key, datasets in results.items():
-            total_samples = sum(len(ds) for ds in datasets.values())
-            print(f"[OK] {dataset_key}: {total_samples} samples across {len(datasets)} splits")
-        
-        return results
-    
-    def create_metadata_summary(self):
-        """Create a summary of all downloaded datasets."""
-        summary = []
-        
-        for dataset_key in self.AVAILABLE_DATASETS.keys():
-            dataset_dir = self.cache_dir / dataset_key
-            metadata_path = dataset_dir / 'metadata.json'
-            
-            if metadata_path.exists():
-                with open(metadata_path, 'r') as f:
-                    metadata = json.load(f)
-                summary.append(metadata)
-        
-        if summary:
-            summary_path = self.cache_dir / 'datasets_summary.json'
-            with open(summary_path, 'w') as f:
-                json.dump(summary, f, indent=2)
-            
-            print(f"\n[OK] Summary saved to: {summary_path}")
-            return summary
+        total_samples = sum(len(s) for s in samples.values())
+        print(f"\n[OK] Successfully loaded {dataset_key}")
+        print(f"[INFO] Total samples: {total_samples}")
+        for split, split_samples in samples.items():
+            print(f"  - {split}: {len(split_samples)} samples")
+
+        return samples
+
+    except Exception as e:
+        print(f"\n[FAILED] Failed to fetch {dataset_key}: {e}")
+        return None
+
+
+def fetch_multiple_datasets(
+    dataset_manager: DatasetManager,
+    dataset_keys: List[str],
+    max_samples: Optional[int] = None
+):
+    """
+    Fetch multiple datasets.
+
+    Args:
+        dataset_manager: DatasetManager instance
+        dataset_keys: List of dataset keys to fetch
+        max_samples: Maximum samples per split per dataset
+    """
+    print(f"\n[INFO] Fetching {len(dataset_keys)} datasets...")
+
+    results = {}
+    for dataset_key in dataset_keys:
+        samples = fetch_dataset(
+            dataset_manager,
+            dataset_key,
+            max_samples=max_samples,
+            save_to_disk=True
+        )
+        if samples:
+            results[dataset_key] = samples
+            print(f"\n[OK] {dataset_key} complete\n")
         else:
-            print("\n[WARNING] No datasets found in cache")
-            return []
+            print(f"\n[FAILED] {dataset_key} failed\n")
+
+    # Print summary
+    print("\n" + "="*70)
+    print("FETCH SUMMARY")
+    print("="*70 + "\n")
+
+    if not results:
+        print("[WARNING] No datasets fetched successfully")
+        return results
+
+    for dataset_key, samples in results.items():
+        total_samples = sum(len(s) for s in samples.values())
+        num_splits = len(samples)
+        print(f"[OK] {dataset_key}: {total_samples} samples across {num_splits} splits")
+
+    print(f"\n[INFO] Cache directory: {dataset_manager.cache_dir}")
+    return results
 
 
 def main():
     """Command-line interface."""
     parser = argparse.ArgumentParser(
-        description="Fetch Vietnamese ASR datasets from HuggingFace"
+        description="Fetch Vietnamese ASR datasets from HuggingFace",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # List all available datasets
+  python scripts/fetch_datasets.py --list
+
+  # Fetch specific datasets
+  python scripts/fetch_datasets.py --fetch vimd bud500
+
+  # Fetch all datasets
+  python scripts/fetch_datasets.py --fetch-all
+
+  # Fetch with sample limit (for testing)
+  python scripts/fetch_datasets.py --fetch vimd --max-samples 100
+
+  # Use custom cache directory
+  python scripts/fetch_datasets.py --fetch vimd --cache-dir ./my_data
+        """
     )
-    
+
     parser.add_argument(
         '--list',
         action='store_true',
         help='List available datasets'
     )
-    
+
     parser.add_argument(
         '--fetch',
         nargs='+',
         metavar='DATASET',
-        help='Dataset(s) to fetch (e.g., common_voice_vi vivos)'
+        help='Dataset(s) to fetch (e.g., vimd bud500 lsvsc)'
     )
-    
+
     parser.add_argument(
         '--fetch-all',
         action='store_true',
         help='Fetch all available datasets'
     )
-    
+
+    parser.add_argument(
+        '--data-dir',
+        type=str,
+        default='./data',
+        help='Base data directory (default: ./data)'
+    )
+
     parser.add_argument(
         '--cache-dir',
         type=str,
-        default='./data',
-        help='Cache directory for datasets'
+        default=None,
+        help='Cache directory for downloads (default: <data-dir>/huggingface_cache)'
     )
 
     parser.add_argument(
@@ -271,56 +202,58 @@ def main():
         default=None,
         help='Maximum samples per split (for testing)'
     )
-    
-    parser.add_argument(
-        '--splits',
-        nargs='+',
-        default=None,
-        help='Specific splits to download (e.g., train test)'
-    )
-    
+
     args = parser.parse_args()
-    
+
+    # Check if HuggingFace is available
     if not HF_AVAILABLE:
-        print("\n[FAILED] Error: datasets library not installed")
+        print("\n[FAILED] Error: 'datasets' library not installed")
         print("Install with: pip install datasets")
         return 1
 
-    # Initialize fetcher
-    fetcher = HuggingFaceDatasetFetcher(cache_dir=args.cache_dir, config_file=args.config_file)
-    
+    # Initialize DatasetManager
+    try:
+        dataset_manager = DatasetManager(
+            base_data_dir=args.data_dir,
+            config_file=args.config_file,
+            use_huggingface=True,
+            cache_dir=args.cache_dir
+        )
+    except Exception as e:
+        print(f"\n[FAILED] Error initializing DatasetManager: {e}")
+        return 1
+
     # List datasets
     if args.list:
-        fetcher.list_available_datasets()
+        list_available_datasets(dataset_manager)
         return 0
-    
+
     # Fetch all datasets
     if args.fetch_all:
-        dataset_keys = list(fetcher.AVAILABLE_DATASETS.keys())
-        fetcher.fetch_multiple_datasets(dataset_keys, max_samples=args.max_samples)
-        fetcher.create_metadata_summary()
+        if not dataset_manager.hf_configs:
+            print("[ERROR] No dataset configurations found")
+            return 1
+        dataset_keys = list(dataset_manager.hf_configs.keys())
+        fetch_multiple_datasets(dataset_manager, dataset_keys, max_samples=args.max_samples)
         return 0
-    
+
     # Fetch specific datasets
     if args.fetch:
-        fetcher.fetch_multiple_datasets(args.fetch, max_samples=args.max_samples)
-        fetcher.create_metadata_summary()
+        fetch_multiple_datasets(dataset_manager, args.fetch, max_samples=args.max_samples)
         return 0
-    
+
     # No action specified
     parser.print_help()
     return 0
 
 
 if __name__ == "__main__":
-    import sys
-    
     print("""
 
-                                                                              
-              HuggingFace Dataset Fetcher for Vietnamese ASR                  
-                                                                              
+
+          HuggingFace Dataset Fetcher for Vietnamese ASR
+
 
     """)
-    
+
     sys.exit(main())

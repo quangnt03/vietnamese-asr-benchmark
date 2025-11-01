@@ -224,7 +224,7 @@ figures/
 !**/example*.csv
 *.json
 !**/example*.json
-!**/config*.json
+!**/configs/*.json
 !requirements*.json
 !package*.json
 
